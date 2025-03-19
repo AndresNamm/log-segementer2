@@ -25,14 +25,15 @@ def mouse_callback(event, x, y, flags, param):
 def main():
     global click
 
-    folder = "/home/user/log-segmenter/img/kristjan"
-    img_type = "jpg"
-    downscale = 4
-    sam2_path = "/home/user/log-segmenter/sam2"
+    folder = "/home/user/log-segementer2/img/andres"
+    img_type = "JPEG"
+    downscale = 2
+    sam2_path = "/home/user/log-segementer2/sam2"
     i = 0  # Increase this to skip first i images in the folder
 
     name = folder.split('/')[-1]
-    os.system(f"mkdir segmentations/{name}")
+    if not os.path.exists(f"../segmentations/{name}"):
+        os.system(f"mkdir ../segmentations/{name}")
 
     if GlobalHydra.instance().is_initialized():
         GlobalHydra.instance().clear()
@@ -48,18 +49,20 @@ def main():
     cv2.setMouseCallback("display", mouse_callback)
 
     filenames = sorted(glob.glob(f"{folder}/*.{img_type}"))
+    print(filenames)
     exiting = False
     while True:
         filename = filenames[i]
         imgname_raw = filename.split("/")[-1].split(".")[0]
-        os.system(f"mkdir segmentations/{name}/{imgname_raw}")
+        if not os.path.exists(f"../segmentations/{name}/{imgname_raw}"):
+            os.system(f"mkdir ../segmentations/{name}/{imgname_raw}")
         img = cv2.imread(filename)
         predictor.set_image(img)
         disp_img = cv2.resize(img, None, fx=1/downscale, fy=1/downscale)
 
         old_mask = None
         save_index = 0
-        for imgname in glob.glob(f"segmentations/{name}/{imgname_raw}/*"):
+        for imgname in glob.glob(f"../segmentations/{name}/{imgname_raw}/*"):
             this_mask = cv2.imread(imgname, cv2.IMREAD_GRAYSCALE)
             if old_mask is None:
                 old_mask = this_mask
@@ -113,7 +116,7 @@ def main():
                 sam_mask_amount = 1
             if key == ord(" "):
                 # TODO: Save current mask
-                cv2.imwrite(f"segmentations/{name}/{imgname_raw}/{save_index:05d}.png", mask)
+                cv2.imwrite(f"../segmentations/{name}/{imgname_raw}/{save_index:05d}.png", mask)
                 old_mask[small_mask > 0] = 255
                 save_index += 1
                 pos_points = []
